@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}Задачи - Task Manager{% endblock %}
+
+{% block content %}
+<h1>Мои задачи</h1>
+
+<!-- Форма добавления задачи -->
+<div class="card">
+    <h2>Добавить новую задачу</h2>
+    <form action="{{ url_for('add_task') }}" method="POST">
+        <div class="form-group">
+            <label for="title">Название *</label>
+            <input type="text" id="title" name="title" required placeholder="Что нужно сделать?">
+        </div>
+        <div class="form-group">
+            <label for="description">Описание</label>
+            <textarea id="description" name="description" placeholder="Подробности (необязательно)"></textarea>
+        </div>
+        <button type="submit" class="btn">Добавить задачу</button>
+    </form>
+</div>
+
+<!-- Список задач -->
+<div class="card">
+    <h2>Список задач ({{ tasks|length }})</h2>
+    
+    {% if tasks %}
+        <ul class="task-list">
+            {% for task in tasks %}
+            <li class="task-item {% if task.completed %}completed{% endif %}">
+                <div class="task-info">
+                    <strong>{{ task.title }}</strong>
+                    {% if task.description %}
+                        <p>{{ task.description }}</p>
+                    {% endif %}
+                </div>
+                <div class="task-actions">
+                    <form action="{{ url_for('toggle_task', task_id=task.id) }}" method="POST" style="display:inline;">
+                        <button type="submit" class="btn btn-small">
+                            {% if task.completed %}↩️ Вернуть{% else %}✅ Выполнено{% endif %}
+                        </button>
+                    </form>
+                    <form action="{{ url_for('delete_task', task_id=task.id) }}" method="POST" style="display:inline;">
+                        <button type="submit" class="btn btn-small btn-danger" onclick="return confirm('Удалить задачу?')">🗑️ Удалить</button>
+                    </form>
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p class="empty-message">Задач пока нет. Добавьте первую!</p>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,20 @@
+# ============================================
+# Dockerfile для PostgreSQL с начальной настройкой
+# ============================================
+
+# Базовый образ - официальный PostgreSQL
+FROM postgres:15-alpine
+
+# Метаданные
+LABEL maintainer="SpecopsRF"
+LABEL description="PostgreSQL for Task Manager"
+
+# Копируем скрипт инициализации (если нужен)
+# Все .sql и .sh файлы из этой папки выполнятся при первом запуске
+COPY init-db/ /docker-entrypoint-initdb.d/
+
+# PostgreSQL по умолчанию использует порт 5432
+EXPOSE 5432
+
+# Создаём volume для данных
+VOLUME ["/var/lib/postgresql/data"]

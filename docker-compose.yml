@@ -1,0 +1,79 @@
+# ============================================
+# Docker Compose конфигурация
+# ============================================
+# Версия синтаксиса (для новых версий Docker не указывается)
+
+services:
+  # ============================================
+  # Сервис базы данных
+  # ============================================
+  db:
+    # Собираем из нашего Dockerfile.db
+    build:
+      context: .
+      dockerfile: Dockerfile.db
+    # Имя контейнера
+    container_name: taskmanager-db
+    # Переменные окружения (из .env файла)
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-taskuser}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-taskpassword}
+      POSTGRES_DB: ${POSTGRES_DB:-taskdb}
+    # Проброс порта (localhost:5432 -> container:5432)
+    ports:
+      - "5432:5432"
+    # Именованный том для сохранения данных между перезапусками
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    # Проверка здоровья сервиса
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-taskuser} -d ${POSTGRES_DB:-taskdb}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    # Подключение к сети
+    networks:
+      - taskmanager-network
+    # Политика перезапуска
+    restart: unless-stopped
+
+  # ============================================
+  # Сервис веб-приложения
+  # ============================================
+  web:
+    # Собираем из основного Dockerfile
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: taskmanager-web
+    # Переменные окружения
+    environment:
+      # Строка подключения к БД (db - имя сервиса)
+      DATABASE_URL: postgresql://${POSTGRES_USER:-taskuser}:${POSTGRES_PASSWORD:-taskpassword}@db:5432/${POSTGRES_DB:-taskdb}
+      SECRET_KEY: ${SECRET_KEY:-super-secret-key-change-me}
+      FLASK_ENV: ${FLASK_ENV:-production}
+    # Проброс портов
+    ports:
+      - "5000:5000"
+    # Зависимость - ждём пока БД будет готова
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - taskmanager-network
+    restart: unless-stopped
+
+# ============================================
+# Именованные тома
+# ============================================
+volumes:
+  postgres_data:
+    name: taskmanager-postgres-data
+
+# ============================================
+# Сети
+# ============================================
+networks:
+  taskmanager-network:
+    name: taskmanager-network
+    driver: bridge

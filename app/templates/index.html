@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block title %}Главная - Task Manager{% endblock %}
+
+{% block content %}
+<div class="hero">
+    <h1>Добро пожаловать в Task Manager!</h1>
+    <p>Простое приложение для управления задачами.</p>
+    <p>Это демо-проект для изучения DevOps практик:</p>
+    <ul>
+        <li>✅ Docker и Docker Compose</li>
+        <li>✅ CI/CD с GitHub Actions</li>
+        <li>✅ Автоматическое тестирование</li>
+        <li>✅ Проверки безопасности (SAST/DAST)</li>
+    </ul>
+    <a href="{{ url_for('tasks_list') }}" class="btn">Перейти к задачам →</a>
+</div>
+{% endblock %}
